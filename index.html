@@ -478,11 +478,13 @@ ${isEmail
     ];
     download(slug() + '-contacts.csv', rows.map(r => r.map(cell).join(',')).join('\n'), 'text/csv');
   };
-    let rows = [['day','channel','tag','subject','subject_alt_1','subject_alt_2','body']];
+    $('dlCsv').onclick = () => {
+    const cell = (v) => '"' + String(v||'').replace(/"/g,'""') + '"';
+    const rows = [['day','channel','tag','subject','subject_alt_1','subject_alt_2','body']];
     C.touches.forEach(t => {
-      const alts = t.subjects.filter((_,idx) => idx !== t.subjectIdx);
+      const alts = t.subjects.filter((_, idx) => idx !== t.subjectIdx);
       rows.push([t.day, t.channel, t.tag, selSubject(t), alts[0]||'', alts[1]||'', t.body]);
     });
-    download((C.campaignName||'cadence').replace(/\s+/g,'-').toLowerCase()+'.csv', rows.map(r => r.map(cell).join(',')).join('\n'), 'text/csv');
+    download(slug() + '.csv', rows.map(r => r.map(cell).join(',')).join('\n'), 'text/csv');
   };
 </script>
