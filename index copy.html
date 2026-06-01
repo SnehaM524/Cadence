@@ -1,0 +1,480 @@
+<!-- CADENCE — Demand Gen Sequence Builder (App Edition) -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cadence — Sequence Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #f5f3ee;
+    --surface: #fffefb;
+    --border: #e6e1d6;
+    --border-2: #efebe2;
+    --ink: #20211d;
+    --ink-2: #3a382f;
+    --muted: #6e6a60;
+    --faint: #a39d8f;
+    --accent: #0f8a5f;
+    --accent-d: #0b6c4a;
+    --accent-wash: #e6f3ec;
+    --accent-line: #cfe9da;
+    --slate-wash: #efece3;
+    --ui: 'Plus Jakarta Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--ui); -webkit-font-smoothing: antialiased; font-size: 15px; }
+
+  /* APP SHELL */
+  .topbar { height: 58px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; position: sticky; top: 0; z-index: 20; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+  .logomark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); position: relative; display: inline-block; }
+  .logomark::before, .logomark::after { content: ''; position: absolute; background: #fff; border-radius: 2px; }
+  .logomark::before { width: 12px; height: 2.5px; left: 7px; top: 9px; }
+  .logomark::after { width: 12px; height: 2.5px; left: 7px; top: 14.5px; opacity: .6; }
+  .brand .chip { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-wash); padding: 3px 9px; border-radius: 999px; }
+  .topbar-right { font-size: 13px; color: var(--faint); font-weight: 500; }
+
+  .shell { display: grid; grid-template-columns: 320px 1fr; align-items: start; }
+  @media (max-width: 820px){ .shell { grid-template-columns: 1fr; } }
+
+  /* SIDEBAR */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 22px; min-height: calc(100vh - 58px); position: sticky; top: 58px; }
+  @media (max-width: 820px){ .sidebar { min-height: 0; position: static; border-right: none; border-bottom: 1px solid var(--border); } }
+  .side-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+  .field { margin-bottom: 16px; }
+  .label { font-size: 12px; font-weight: 600; color: var(--ink-2); display: block; margin-bottom: 7px; }
+  .label .opt { color: var(--faint); font-weight: 500; }
+  input[type=text], input[type=number], textarea, select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; font-family: var(--ui); font-size: 14px; color: var(--ink); transition: border-color .14s, box-shadow .14s; }
+  input::placeholder, textarea::placeholder { color: var(--faint); }
+  textarea { resize: vertical; min-height: 58px; line-height: 1.45; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,138,95,0.15); }
+  select { cursor: pointer; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 16px) center, calc(100% - 11px) center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+  button.build { width: 100%; margin-top: 6px; font-family: var(--ui); font-weight: 700; font-size: 14px; color: #fff; background: var(--accent); border: none; border-radius: 9px; padding: 12px; cursor: pointer; transition: background .14s, transform .1s; }
+  button.build:hover:not(:disabled) { background: var(--accent-d); }
+  button.build:active:not(:disabled) { transform: translateY(1px); }
+  button.build:disabled { opacity: .6; cursor: wait; }
+  .hint { font-size: 12px; color: var(--faint); margin-top: 10px; text-align: center; }
+  .err { font-size: 13px; color: #d4453a; margin-top: 10px; font-weight: 500; }
+  .setup.collapsed .full { display: none; }
+  .summary { display: none; }
+  .setup.collapsed .summary { display: block; font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .summary b { color: var(--ink); font-weight: 700; }
+  .edit-link { font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; background: var(--accent-wash); border: none; border-radius: 8px; padding: 9px 14px; }
+  .edit-link:hover { background: #d6ecdf; }
+
+  /* CANVAS */
+  .canvas { padding: 28px 30px 90px; }
+  @media (max-width: 560px){ .canvas { padding: 22px 18px 80px; } }
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 90px 20px; color: var(--faint); }
+  .canvas:has(#studio.show) .empty { display: none; }
+  .empty .ico { width: 52px; height: 52px; border: 2px dashed var(--border); border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px; color: var(--faint); }
+  .empty .et { font-size: 16px; font-weight: 700; color: var(--ink-2); }
+  .empty .es { font-size: 14px; margin-top: 4px; }
+
+  .studio { display: none; }
+  .studio.show { display: block; }
+  .studio-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 26px; }
+  .camp-name { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .camp-sub { font-size: 13px; color: var(--muted); margin-top: 5px; }
+  .exports { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ex { font-family: var(--ui); font-size: 13px; font-weight: 600; color: var(--ink-2); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; cursor: pointer; transition: border-color .14s, color .14s, background .14s; }
+  .ex:hover { border-color: var(--accent); color: var(--accent); }
+  .ex.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .ex.primary:hover { background: var(--accent-d); border-color: var(--accent-d); color: #fff; }
+
+  .timeline { position: relative; counter-reset: touch; padding-left: 44px; max-width: 720px; }
+  .timeline::before { content: ''; position: absolute; left: 13px; top: 10px; bottom: 14px; width: 2px; background: var(--border); }
+  .touch { counter-increment: touch; position: relative; margin-bottom: 14px; animation: pop .3s ease both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .touch::before { content: counter(touch); position: absolute; left: 0; top: 16px; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .touch.linkedin::before { border-color: var(--accent); color: var(--accent); }
+  .touch.pending::before { color: var(--faint); }
+
+  .tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: box-shadow .15s; }
+  .tcard:hover { box-shadow: 0 4px 16px rgba(33,33,29,0.07); }
+  .tmeta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
+  .badge.email { background: var(--slate-wash); color: #5c574c; }
+  .badge.linkedin { background: var(--accent-wash); color: var(--accent-d); }
+
+  .chtoggle { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .chtoggle button { font-size: 11px; font-weight: 600; padding: 5px 10px; background: var(--surface); border: none; cursor: pointer; color: var(--muted); }
+  .chtoggle button.on { background: var(--accent); color: #fff; }
+  .daybox { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .daybox input { width: 50px; padding: 5px 7px; font-size: 12px; }
+  .tagedit { font-size: 12px; color: var(--muted); border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 4px 6px; width: 120px; font-weight: 600; }
+  .tagedit:hover { border-color: var(--border); }
+  .tagedit:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .tctrl { margin-left: auto; display: flex; gap: 5px; }
+  .icbtn { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--border); background: var(--surface); border-radius: 7px; cursor: pointer; color: var(--muted); font-size: 13px; line-height: 1; transition: border-color .14s, color .14s; }
+  .icbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .icbtn.del:hover { border-color: #d4453a; color: #d4453a; }
+
+  .subjects { margin: 6px 0 12px; }
+  .slabel { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .srow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .spick { width: 26px; height: 30px; flex: none; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .12s; }
+  .spick.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .sinput { flex: 1; font-size: 14px; font-weight: 600; border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; }
+
+  .tokens { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 2px 0 12px; }
+  .tlabel { font-size: 11px; color: var(--faint); font-weight: 600; }
+  .token { font-size: 11px; font-family: ui-monospace, 'SF Mono', monospace; color: var(--accent-d); background: var(--accent-wash); border: 1px solid var(--accent-line); border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: background .12s; }
+  .token:hover { background: #d6ecdf; }
+
+  .bodyt { width: 100%; border: none; background: transparent; font-family: var(--ui); font-size: 14px; line-height: 1.6; color: var(--ink-2); resize: none; overflow: hidden; }
+  .bodyt:focus { outline: none; box-shadow: none; }
+
+  .tactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border-2); }
+  .ta { font-family: var(--ui); font-size: 12px; font-weight: 600; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 6px 11px; cursor: pointer; transition: border-color .14s, color .14s, background .14s; }
+  .ta:hover { border-color: var(--accent); color: var(--accent); background: var(--surface); }
+  .ta.copy { margin-left: auto; }
+  .tloading { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--faint); padding: 4px 0; }
+  .spin { width: 15px; height: 15px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: sp .8s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  .addtouch { margin: 18px 0 0 44px; max-width: 720px; }
+  .addtouch button { font-size: 13px; font-weight: 600; color: var(--accent-d); background: var(--accent-wash); border: 1px dashed var(--accent-line); border-radius: 9px; padding: 11px 16px; cursor: pointer; width: 100%; transition: background .12s; }
+  .addtouch button:hover { background: #d6ecdf; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; padding: 11px 18px; border-radius: 9px; opacity: 0; transition: all .22s; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .footnote { max-width: 720px; margin: 28px 0 0 44px; font-size: 11px; color: var(--faint); line-height: 1.6; }
+</style>
+
+<div class="topbar">
+  <div class="brand"><span class="logomark"></span>Cadence <span class="chip">Demand Gen</span></div>
+  <div class="topbar-right">Sequence builder</div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar setup" id="setup">
+    <div class="full">
+      <div class="side-title">Campaign brief</div>
+      <div class="field"><label class="label">What you sell</label><textarea id="product" placeholder="An AI research agent that briefs reps before every sales call."></textarea></div>
+      <div class="field"><label class="label">Who you are targeting</label><textarea id="icp" placeholder="VP of Sales at 200 to 1000 person B2B SaaS companies running outbound."></textarea></div>
+      <div class="field"><label class="label">Campaign type</label>
+        <select id="type"><option value="cold outbound">Cold outbound</option><option value="inbound nurture">Inbound nurture</option><option value="re-engagement">Re engagement</option></select>
+      </div>
+      <div class="field"><label class="label">Goal</label>
+        <select id="goal"><option value="book a demo">Book a demo</option><option value="start a free trial">Start a free trial</option><option value="register for a webinar">Register for a webinar</option><option value="reply to qualify interest">Get a reply to qualify</option></select>
+      </div>
+      <div class="field"><label class="label">Sender <span class="opt">optional</span></label><input type="text" id="sender" placeholder="Sneha" /></div>
+      <button class="build" id="build">Build cadence</button>
+      <div class="hint">5 to 6 touches over two weeks</div>
+      <div class="err" id="err"></div>
+    </div>
+    <div class="summary" id="summary"></div>
+    <button class="edit-link" id="editLink" style="display:none">Edit brief</button>
+  </aside>
+
+  <main class="canvas">
+    <div class="empty" id="emptyState">
+      <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+      <div class="et">No sequence yet</div>
+      <div class="es">Fill in the brief and build your cadence.</div>
+      <button class="ex" id="loadSample" style="margin-top:18px">Load a sample · no connection needed</button>
+    </div>
+    <section class="studio" id="studio">
+      <div class="studio-head">
+        <div><div class="camp-name" id="campName"></div><div class="camp-sub" id="campSub"></div></div>
+        <div class="exports"><button class="ex" id="copyAll">Copy all</button><button class="ex" id="dlMd">Markdown</button><button class="ex primary" id="dlCsv">Export CSV</button></div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="addtouch"><button id="addTouch">+ Add a touch</button></div>
+      <div class="footnote">Subjects use {{merge_tokens}} that any sequencer maps to real contact fields. Sequences are written live by Claude through a secure server function. Export to CSV to import into your sequencer.</div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const TOKENS = ['{{first_name}}', '{{company}}', '{{custom_line}}'];
+  let C = { ctx:{}, campaignName:'', touches:[] };
+  let LF = null; // last focused editable field
+
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function noDash(s){ return String(s||'').replace(/\s*[—–]\s*/g, ', '); }
+  function selSubject(t){ return t.subjects && t.subjects.length ? (t.subjects[t.subjectIdx] || t.subjects[0]) : ''; }
+
+  async function call(prompt) {
+    let res;
+    try {
+      res = await fetch('/api/generate', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ prompt })
+      });
+    } catch (netErr) {
+      throw new Error('Could not reach the server. Try again in a moment.');
+    }
+    if (!res.ok) {
+      let body = ''; try { body = await res.text(); } catch (e) {}
+      throw new Error('Server error ' + res.status + (body ? ': ' + body.slice(0,140) : ''));
+    }
+    const data = await res.json();
+    const text = (data.content||[]).map(b => b.text || '').join('').trim();
+    if (!text) throw new Error('The model returned an empty response.');
+    try { return JSON.parse(text.replace(/```json|```/g,'').trim()); }
+    catch (e) { throw new Error('The model did not return clean JSON. Try again.'); }
+  }
+
+  function planPrompt(c) {
+    return `You are a demand gen strategist building a multi touch outbound cadence.
+PRODUCT: ${c.product}
+TARGET: ${c.icp}
+CAMPAIGN TYPE: ${c.type}
+GOAL: ${c.goal}
+Design a ${c.type} cadence of 5 to 6 touches driving toward the goal. Space them realistically over about two weeks. Mix email with one or two LinkedIn touches. Give each touch a distinct angle so the sequence never repeats itself. End with a strong final touch, a breakup or last call.
+Return ONLY valid JSON, no markdown, no backticks:
+{"campaignName":"short punchy name","touches":[{"id":"t1","day":0,"channel":"email","angle":"the specific hook or angle for this touch","tag":"2 to 3 word label like Value led, Social proof, Case study, Breakup"}]}`;
+  }
+
+  function touchPrompt(c, t, prevSubjects, tone) {
+    const isEmail = t.channel === 'email';
+    return `You are writing one touch in a ${c.type} cadence for a demand gen campaign.
+PRODUCT: ${c.product}
+TARGET: ${c.icp}
+GOAL: ${c.goal}
+SENDER: ${c.sender || 'the rep'}
+THIS TOUCH: day ${t.day}, channel ${t.channel}, angle: ${t.angle}, role: ${t.tag}.
+PREVIOUS SUBJECTS (do not repeat these): ${prevSubjects || 'none'}
+${tone ? 'Adjust the writing to be: ' + tone + '.' : ''}
+Use light, natural personalization with these EXACT merge tokens where they fit: {{first_name}}, {{company}}, {{custom_line}}. Do not stuff them. The {{custom_line}} token stands in for a personalized opener.
+Write tight and human, no corporate filler, one clear ask tied to the goal. Never use em dashes or en dashes, and do not use hyphens as sentence punctuation. Keep sentences short.
+${isEmail
+  ? 'Give THREE subject line options, each under 7 words, each a genuinely different angle so they can be A/B tested. Body 50 to 90 words.\nReturn ONLY valid JSON, no markdown: {"subjects":["","",""],"body":""}'
+  : 'This is a LinkedIn message. No subject lines. Under 60 words, casual and direct.\nReturn ONLY valid JSON, no markdown: {"subjects":[],"body":""}'}`;
+  }
+
+  function autosize(el){ el.style.height='auto'; el.style.height=(el.scrollHeight)+'px'; }
+  function insertAtCursor(el, text){
+    if (!el || !document.body.contains(el)) return;
+    const s = el.selectionStart ?? el.value.length, e = el.selectionEnd ?? el.value.length;
+    el.value = el.value.slice(0,s) + text + el.value.slice(e);
+    const pos = s + text.length; el.focus(); el.setSelectionRange(pos,pos);
+    el.dispatchEvent(new Event('input', { bubbles:true }));
+  }
+
+  function subjectsHTML(t) {
+    if (t.channel !== 'email') return '';
+    if (!t.subjects || !t.subjects.length) return '';
+    return `<div class="subjects"><div class="slabel">Subject lines · pick one to send</div>${
+      t.subjects.map((s,idx) => `<div class="srow"><button class="spick ${idx===t.subjectIdx?'on':''}" data-idx="${idx}" title="Send this one">${'ABC'[idx]||(idx+1)}</button><input class="sinput" data-idx="${idx}" value="${esc(s)}"></div>`).join('')
+    }</div>`;
+  }
+
+  function touchInner(t) {
+    if (t.loading) {
+      return `<div class="tcard"><div class="tmeta"><span class="badge ${t.channel}">${t.channel==='email'?'Email':'LinkedIn'}</span><span class="daybox">Day ${t.day}</span></div><div class="tloading"><div class="spin"></div>Writing this touch…</div></div>`;
+    }
+    return `<div class="tcard">
+      <div class="tmeta">
+        <div class="chtoggle"><button data-ch="email" class="${t.channel==='email'?'on':''}">Email</button><button data-ch="linkedin" class="${t.channel==='linkedin'?'on':''}">LinkedIn</button></div>
+        <span class="daybox">Day <input type="number" min="0" class="dayin" value="${t.day}"></span>
+        <input class="tagedit" value="${esc(t.tag)}" title="Touch label">
+        <div class="tctrl"><button class="icbtn" data-act="up" title="Move up">↑</button><button class="icbtn" data-act="down" title="Move down">↓</button><button class="icbtn del" data-act="del" title="Delete touch">✕</button></div>
+      </div>
+      ${subjectsHTML(t)}
+      <div class="tokens"><span class="tlabel">Insert</span>${TOKENS.map(tok=>`<button class="token" data-tok="${tok}">${tok}</button>`).join('')}</div>
+      <textarea class="bodyt">${esc(t.body||'')}</textarea>
+      <div class="tactions">
+        <button class="ta" data-act="regen">↻ Regenerate</button>
+        <button class="ta" data-act="shorter">Shorter</button>
+        <button class="ta" data-act="warmer">Warmer</button>
+        <button class="ta" data-act="direct">More direct</button>
+        <button class="ta copy" data-act="copy">Copy</button>
+      </div>
+    </div>`;
+  }
+
+  function renderTimeline() {
+    $('timeline').innerHTML = C.touches.map(t => `<div class="touch ${t.channel} ${t.loading?'pending':''}" id="touch-${t.id}">${touchInner(t)}</div>`).join('');
+    C.touches.forEach(t => { if (!t.loading) attachHandlers(t); });
+  }
+
+  function attachHandlers(t) {
+    const el = $('touch-' + t.id); if (!el) return;
+    // channel toggle
+    el.querySelectorAll('.chtoggle button').forEach(b => b.onclick = () => {
+      const ch = b.dataset.ch; if (ch === t.channel) return;
+      t.channel = ch; renderTimeline();
+    });
+    // day
+    const day = el.querySelector('.dayin');
+    if (day) day.addEventListener('input', e => { t.day = parseInt(e.target.value)||0; });
+    // tag
+    const tag = el.querySelector('.tagedit');
+    if (tag) tag.addEventListener('input', e => { t.tag = e.target.value; });
+    // subject pick + edit
+    el.querySelectorAll('.spick').forEach(b => b.onclick = () => {
+      t.subjectIdx = parseInt(b.dataset.idx);
+      el.querySelectorAll('.spick').forEach(x => x.classList.toggle('on', parseInt(x.dataset.idx) === t.subjectIdx));
+    });
+    el.querySelectorAll('.sinput').forEach(inp => {
+      inp.addEventListener('focus', () => LF = inp);
+      inp.addEventListener('input', e => { t.subjects[parseInt(inp.dataset.idx)] = e.target.value; });
+    });
+    // tokens
+    el.querySelectorAll('.token').forEach(b => b.onclick = () => insertAtCursor(LF, b.dataset.tok));
+    // body
+    const bt = el.querySelector('.bodyt');
+    if (bt) {
+      autosize(bt);
+      bt.addEventListener('focus', () => LF = bt);
+      bt.addEventListener('input', e => { t.body = e.target.value; autosize(e.target); });
+    }
+    // actions
+    el.querySelectorAll('.ta').forEach(b => b.onclick = () => touchAction(b.dataset.act, t));
+    // structure
+    el.querySelectorAll('.tctrl .icbtn').forEach(b => b.onclick = () => structureAction(b.dataset.act, t));
+  }
+
+  function prevSubjectsFor(t) {
+    const i = C.touches.indexOf(t);
+    return C.touches.slice(0, i).filter(x => x.channel==='email').map(selSubject).filter(Boolean).join(' | ');
+  }
+
+  async function fillTouch(t, tone) {
+    try {
+      const r = await call(touchPrompt(C.ctx, t, prevSubjectsFor(t), tone));
+      t.subjects = (Array.isArray(r.subjects) ? r.subjects.filter(Boolean) : (r.subject ? [r.subject] : [])).map(noDash);
+      t.subjectIdx = 0;
+      t.body = noDash(r.body || '');
+    } catch (e) {
+      t.body = t.body || '(could not write this touch, try regenerate)';
+    }
+  }
+
+  async function touchAction(act, t) {
+    if (act === 'copy') {
+      const sj = selSubject(t);
+      const txt = (t.channel==='email' && sj ? 'Subject: ' + sj + '\n\n' : '') + (t.body||'');
+      navigator.clipboard.writeText(txt); toast('Touch copied'); return;
+    }
+    const toneMap = { regen:'', shorter:'noticeably shorter and punchier', warmer:'warmer and more personal', direct:'more direct and confident' };
+    t.loading = true; renderTimeline();
+    await fillTouch(t, toneMap[act] || '');
+    t.loading = false; renderTimeline();
+  }
+
+  function structureAction(act, t) {
+    const i = C.touches.indexOf(t);
+    if (act === 'up' && i > 0) { [C.touches[i-1], C.touches[i]] = [C.touches[i], C.touches[i-1]]; }
+    else if (act === 'down' && i < C.touches.length-1) { [C.touches[i+1], C.touches[i]] = [C.touches[i], C.touches[i+1]]; }
+    else if (act === 'del') { if (C.touches.length <= 1) { toast('Keep at least one touch'); return; } C.touches.splice(i,1); }
+    renderTimeline(); updateSub();
+  }
+
+  function updateSub() {
+    $('campSub').textContent = `${C.ctx.type} · ${C.touches.length} touches · goal: ${C.ctx.goal}`;
+  }
+
+  async function addTouch() {
+    const last = C.touches[C.touches.length-1];
+    const t = { id:'t'+Date.now(), day:(last?last.day:0)+3, channel:'email', angle:'a fresh follow up that adds a new reason to reply', tag:'Follow up', subjects:[], subjectIdx:0, body:'', loading:true };
+    C.touches.push(t); renderTimeline(); updateSub();
+    await fillTouch(t); t.loading = false; renderTimeline(); updateSub();
+  }
+
+  async function buildAll() {
+    const c = { product:$('product').value.trim(), icp:$('icp').value.trim(), type:$('type').value, goal:$('goal').value, sender:$('sender').value.trim() };
+    $('err').textContent = '';
+    if (!c.product || !c.icp) { $('err').textContent = 'Add what you sell and who you are targeting first.'; return; }
+    C.ctx = c;
+    $('build').disabled = true; $('build').textContent = 'Building…';
+    try {
+      const plan = await call(planPrompt(c));
+      C.campaignName = noDash(plan.campaignName || 'Untitled cadence');
+      C.touches = (plan.touches||[]).slice(0,6).map((t,i) => ({
+        id: t.id || ('t'+(i+1)), day: parseInt(t.day)||0,
+        channel: (t.channel === 'linkedin' ? 'linkedin' : 'email'),
+        angle: t.angle || '', tag: t.tag || 'Touch', subjects:[], subjectIdx:0, body:'', loading:true
+      }));
+      $('setup').classList.add('collapsed');
+      $('editLink').style.display = 'inline-block';
+      $('summary').innerHTML = `<b>${c.type}</b><br>Goal: <b>${c.goal}</b>`;
+      $('studio').classList.add('show');
+      $('campName').textContent = C.campaignName;
+      updateSub();
+      renderTimeline();
+      for (const t of C.touches) { await fillTouch(t); t.loading = false; renderTimeline(); }
+    } catch (e) {
+      $('err').textContent = e.message || 'Could not build the cadence. Try again.';
+    }
+    $('build').disabled = false; $('build').textContent = 'Build cadence';
+  }
+
+  $('build').onclick = buildAll;
+  $('addTouch').onclick = addTouch;
+
+  function loadSample() {
+    C.ctx = { product:'AI sales research agent that auto briefs reps before every call', icp:'VP of Sales and RevOps at 200 to 1500 person B2B SaaS companies running outbound', type:'cold outbound', goal:'book a demo', sender:'Sneha' };
+    C.campaignName = 'Prep, not prospecting';
+    C.touches = [
+      { id:'s1', day:0, channel:'email', angle:'cold open on wasted prep time', tag:'Cold open', subjectIdx:0,
+        subjects:['Your reps lose an hour per call','{{company}} call prep, automated','Walk in ready, every call'],
+        body:'Hi {{first_name}}, {{custom_line}} Most reps at {{company}} burn close to an hour digging for account news, tech stack, and buying signals before a call. Our agent pulls all of it into a one page brief automatically, so the rep walks in ready instead of scrambling. Worth a quick look at how it would fit your team? Open to a 20 minute demo this week?' },
+      { id:'s2', day:2, channel:'linkedin', angle:'soft connect', tag:'Connect', subjectIdx:0, subjects:[],
+        body:'Hi {{first_name}}, I work with sales leaders at companies like {{company}} on cutting call prep from an hour down to minutes. Not selling here, just like to connect with people thinking about rep productivity.' },
+      { id:'s3', day:4, channel:'email', angle:'proof point with a number', tag:'Proof point', subjectIdx:0,
+        subjects:['Less prep, more pipeline','How teams cut prep 80 percent','{{first_name}}, a quick number'],
+        body:'Hi {{first_name}}, quick follow up. Teams using the agent cut prep time by about 80 percent and lifted their connect to meeting rate, because reps open with something actually relevant. {{custom_line}} If that is interesting for {{company}}, I can show you a live brief built on one of your real accounts. Want me to set it up?' },
+      { id:'s4', day:7, channel:'email', angle:'peer case study', tag:'Case study', subjectIdx:0,
+        subjects:['A RevOps team like yours','From 60 minutes to 5','{{company}} could see this too'],
+        body:'Hi {{first_name}}, a RevOps leader running a 30 rep team had the same problem. Prep was slow and inconsistent. After rolling out the agent, every rep got a standard one page brief before each call and prep dropped to about five minutes. {{custom_line}} Happy to walk you through exactly how they set it up. Does Thursday work for a short demo?' },
+      { id:'s5', day:9, channel:'linkedin', angle:'light nudge', tag:'Nudge', subjectIdx:0, subjects:[],
+        body:'Hi {{first_name}}, circling back. If call prep and rep ramp are on your list for {{company}} this quarter, a quick look would be worth your time. Want me to send over a sample brief?' },
+      { id:'s6', day:12, channel:'email', angle:'breakup', tag:'Breakup', subjectIdx:0,
+        subjects:['Closing the loop','Should I stop here?','One last note, {{first_name}}'],
+        body:'Hi {{first_name}}, I have reached out a few times, so I will assume the timing is not right. {{custom_line}} If prep speed and consistent call readiness become a priority at {{company}}, I am one reply away and can have a live brief ready in a day. Wishing you a strong quarter.' }
+    ];
+    $('setup').classList.add('collapsed');
+    $('editLink').style.display = 'inline-block';
+    $('summary').innerHTML = '<b>cold outbound</b><br>Goal: <b>book a demo</b>';
+    $('studio').classList.add('show');
+    $('campName').textContent = C.campaignName;
+    updateSub();
+    renderTimeline();
+  }
+  $('loadSample').onclick = loadSample;
+  $('editLink').onclick = () => { $('setup').classList.remove('collapsed'); $('editLink').style.display='none'; };
+
+  // exports
+  function asText() {
+    let s = C.campaignName + '\n' + C.ctx.type + ' · goal: ' + C.ctx.goal + '\n\n';
+    C.touches.forEach((t,i) => {
+      s += `Touch ${i+1} · Day ${t.day} · ${t.channel.toUpperCase()} · ${t.tag}\n`;
+      if (t.channel === 'email' && t.subjects.length) {
+        s += 'Subject (sending): ' + selSubject(t) + '\n';
+        const alts = t.subjects.filter((_,idx) => idx !== t.subjectIdx);
+        if (alts.length) s += 'Alt subjects: ' + alts.join(' | ') + '\n';
+      }
+      s += (t.body||'') + '\n\n';
+    });
+    return s.trim();
+  }
+  function download(name, text, mime) {
+    try {
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000); toast('Downloaded');
+    } catch (e) { navigator.clipboard.writeText(text); toast('Copied instead'); }
+  }
+  function cell(v){ return '"' + String(v||'').replace(/"/g,'""') + '"'; }
+
+  $('copyAll').onclick = () => { navigator.clipboard.writeText(asText()); toast('Sequence copied'); };
+  $('dlMd').onclick = () => download((C.campaignName||'cadence').replace(/\s+/g,'-').toLowerCase()+'.md', asText(), 'text/markdown');
+  $('dlCsv').onclick = () => {
+    let rows = [['day','channel','tag','subject','subject_alt_1','subject_alt_2','body']];
+    C.touches.forEach(t => {
+      const alts = t.subjects.filter((_,idx) => idx !== t.subjectIdx);
+      rows.push([t.day, t.channel, t.tag, selSubject(t), alts[0]||'', alts[1]||'', t.body]);
+    });
+    download((C.campaignName||'cadence').replace(/\s+/g,'-').toLowerCase()+'.csv', rows.map(r => r.map(cell).join(',')).join('\n'), 'text/csv');
+  };
+</script>
