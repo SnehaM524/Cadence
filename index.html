@@ -469,6 +469,7 @@ ${isEmail
 
   $('copyAll').onclick = () => { navigator.clipboard.writeText(asText()); toast('Sequence copied'); };
   $('dlMd').onclick = () => download((C.campaignName||'cadence').replace(/\s+/g,'-').toLowerCase()+'.md', asText(), 'text/markdown');
+ const slug = () => (C && C.name ? C.name : 'campaign').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   $('contactsCsv').onclick = () => {
     const cell = (v) => '"' + String(v||'').replace(/"/g,'""') + '"';
     const rows = [
